@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Phaser Core Kit Demo</title>
+    <style>
+      body {
+        margin: 0;
+        background: #222;
+        color: #fff;
+        font-family: sans-serif;
+        text-align: center;
+      }
+      #game {
+        width: 960px;
+        height: 540px;
+        margin: 2rem auto;
+        position: relative;
+        border: 1px solid #444;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Phaser Core Kit Lite Demo</h1>
+    <div id="game"></div>
+    <!-- Load Phaser from CDN (can be replaced with local copy) -->
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.min.js"></script>
+    <!-- Load the Core Kit UMD build (assumes build has been run) -->
+    <script src="../../dist/core-kit.umd.js"></script>
+    <script>
+      // Create the core with configuration options
+      const core = PCore.createCore({
+        container: '#game',
+        width: 960,
+        height: 540,
+        backgroundColor: 0x222222,
+        seed: 7,
+      });
+      // Initialise plugins
+      PCore.DialogueLite.init(core);
+      PCore.InventoryLite.init(core);
+      PCore.CharactersLite.init(core);
+      PCore.TradeLite.init(core);
+      PCore.LocationLite.init(core);
+      // Load configuration and start
+      core.loadConfig('game.json').then(() => {
+        core.start();
+        // Initialize HUD values
+        const money = core.registry.get('char.hero.money');
+        const energy = core.registry.get('char.hero.energy');
+        core.ui.hud.set({ money, energy });
+        // Update HUD when character stats change
+        core.bus.on('char:changed', (p) => {
+          if (p.id === 'hero') {
+            if (p.key === 'money') core.ui.hud.patch({ money: p.value });
+            if (p.key === 'energy') core.ui.hud.patch({ energy: p.value });
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

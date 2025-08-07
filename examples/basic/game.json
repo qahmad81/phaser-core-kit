@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0",
+  "game": { "title": "Lite Demo", "seed": 7, "startScene": "village" },
+  "display": { "width": 960, "height": 540, "backgroundColor": 2236962 },
+  "assets": [
+    { "key": "bg_village", "type": "image", "url": "assets/bg/village.png" },
+    { "key": "player", "type": "image", "url": "assets/sprites/player.png" },
+    { "key": "npc", "type": "image", "url": "assets/sprites/npc.png" },
+    { "key": "apple", "type": "image", "url": "assets/items/apple.png" }
+  ],
+  "characters": [ { "id": "hero", "name": "Tony", "sprite": "player", "money": 100, "energy": 80 } ],
+  "inventory": { "shared": [], "byCharacter": { "hero": [] } },
+  "dialogues": [ { "id": "merchant_intro", "lines": [ { "text": "Buy an apple for 10?", "options": [
+    { "label": "Buy", "action": { "type": "trade", "op": "buy", "item": "apple", "price": 10, "q": 1 } },
+    { "label": "No",   "action": { "type": "close_dialog" } }
+  ] } ] } ],
+  "shops": [ { "id": "fruit_stand", "items": [ { "id": "apple", "price": 10 } ] } ],
+  "scenes": [ { "id": "village", "background": "bg_village",
+    "entities": [
+      { "type": "player", "id": "hero", "spawn": [120, 360], "sprite": "player" },
+      { "type": "npc", "id": "merchant", "spawn": [320, 340], "sprite": "npc", "dialog": "merchant_intro" }
+    ],
+    "shops": [ "fruit_stand" ]
+  } ]
+}

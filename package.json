@@ -1,0 +1,30 @@
+{
+  "name": "phaser-core-kit",
+  "version": "1.0.0",
+  "main": "dist/core-kit.umd.js",
+  "module": "dist/core-kit.esm.js",
+  "exports": {
+    ".": {
+      "require": "./dist/core-kit.umd.js",
+      "import": "./dist/core-kit.esm.js"
+    }
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "test": "vitest run"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "js-yaml": "^4.1.0",
+    "phaser": "^3.90.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.6",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "rollup": "^4.46.2",
+    "vitest": "^3.2.4"
+  }
+}
