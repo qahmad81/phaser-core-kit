@@ -87,6 +87,7 @@ export const InventoryLite = {
       if (typeof document === 'undefined') return;
       const position = opts.position || 'right';
       const collapsed = opts.collapsed ?? false;
+      const charId = opts.charId ?? 'hero';
       const container = core.app?.canvas?.parentElement || document.body;
       const panel = document.createElement('div');
       panel.style.position = 'absolute';
@@ -120,7 +121,7 @@ export const InventoryLite = {
       panel.appendChild(listEl);
       function refresh() {
         listEl.innerHTML = '';
-        const items = list();
+        const items = list(charId);
         items.forEach((it) => {
           const row = document.createElement('div');
           row.textContent = `${it.id} (${it.q})`;

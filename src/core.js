@@ -149,6 +149,7 @@ export function createCore(opts = {}) {
           if (sceneDef.background) {
             const bg = this.add.image(0, 0, sceneDef.background);
             bg.setOrigin(0, 0);
+            bus.emit('location:background:drawn', { id: sceneKey, key: sceneDef.background, image: bg });
           }
           // Entities
           if (Array.isArray(sceneDef.entities)) {

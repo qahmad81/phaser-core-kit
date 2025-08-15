@@ -50,7 +50,7 @@ export interface InventoryAPI {
   remove(id: string, q?: number, charId?: string): void;
   has(id: string, q?: number, charId?: string): boolean;
   list(charId?: string): { id: string; q: number }[];
-  renderStorage?(opts?: { position?: 'left' | 'right' | 'bottom'; collapsed?: boolean }): void;
+  renderStorage?(opts?: { position?: 'left' | 'right' | 'bottom'; collapsed?: boolean; charId?: string }): void;
 }
 
 /** Character management API attached by CharactersLite. */

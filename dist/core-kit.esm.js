@@ -208,7 +208,7 @@ function createDialog(container, bus) {
       top: '0',
       width: '100%',
       height: '100%',
-      display: 'flex',
+      display: 'none',
       justifyContent: 'center',
       alignItems: 'center',
       backgroundColor: 'rgba(0,0,0,0.5)',
@@ -227,6 +227,7 @@ function createDialog(container, bus) {
     ensureOverlay();
     // Clear existing content
     overlay.innerHTML = '';
+    overlay.style.display = 'flex';
     // Create dialog container
     const dialog = document.createElement('div');
     Object.assign(dialog.style, {
@@ -286,8 +287,10 @@ function createDialog(container, bus) {
   function close() {
     if (!overlay || !isOpen) return;
     overlay.innerHTML = '';
+    overlay.style.display = 'none';
     isOpen = false;
     bus.emit('dialog:close');
+    bus.emit('dialog:ended');
   }
 
   function getIsOpen() {
@@ -656,6 +659,7 @@ function createCore(opts = {}) {
           if (sceneDef.background) {
             const bg = this.add.image(0, 0, sceneDef.background);
             bg.setOrigin(0, 0);
+            bus.emit('location:background:drawn', { id: sceneKey, key: sceneDef.background, image: bg });
           }
           // Entities
           if (Array.isArray(sceneDef.entities)) {
@@ -691,7 +695,7 @@ function createCore(opts = {}) {
       }
       scenes.set(sceneKey, GenericScene);
       // Add scene to Phaser but don't start yet
-      if (!app.scene.get(sceneKey)) {
+      if (!app.scene.getScene(sceneKey)) {
         app.scene.add(sceneKey, GenericScene, false);
       }
     });
@@ -977,6 +981,7 @@ const InventoryLite = {
       if (typeof document === 'undefined') return;
       const position = opts.position || 'right';
       const collapsed = opts.collapsed ?? false;
+      const charId = opts.charId ?? 'hero';
       const container = core.app?.canvas?.parentElement || document.body;
       const panel = document.createElement('div');
       panel.style.position = 'absolute';
@@ -1010,7 +1015,7 @@ const InventoryLite = {
       panel.appendChild(listEl);
       function refresh() {
         listEl.innerHTML = '';
-        const items = list();
+        const items = list(charId);
         items.forEach((it) => {
           const row = document.createElement('div');
           row.textContent = `${it.id} (${it.q})`;
