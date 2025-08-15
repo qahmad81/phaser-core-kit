@@ -31,7 +31,7 @@
             if (p.key === 'energy') core.ui.hud.patch({ energy: p.value });
           }
         });
-        core.inventory.renderStorage({ position: 'right', collapsed: true });
+        core.inventory.renderStorage({ position: 'left', collapsed: true, charId: 'hero' });
         core.start();
       });
     </script>

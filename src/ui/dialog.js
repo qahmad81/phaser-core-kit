@@ -24,7 +24,7 @@ export function createDialog(container, bus) {
       top: '0',
       width: '100%',
       height: '100%',
-      display: 'flex',
+      display: 'none',
       justifyContent: 'center',
       alignItems: 'center',
       backgroundColor: 'rgba(0,0,0,0.5)',
@@ -43,6 +43,7 @@ export function createDialog(container, bus) {
     ensureOverlay();
     // Clear existing content
     overlay.innerHTML = '';
+    overlay.style.display = 'flex';
     currentOnChoose = onChoose;
     // Create dialog container
     const dialog = document.createElement('div');
@@ -103,8 +104,10 @@ export function createDialog(container, bus) {
   function close() {
     if (!overlay || !isOpen) return;
     overlay.innerHTML = '';
+    overlay.style.display = 'none';
     isOpen = false;
     bus.emit('dialog:close');
+    bus.emit('dialog:ended');
   }
 
   function getIsOpen() {
