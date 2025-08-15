@@ -39,4 +39,6 @@
   {"command":"createHud.set","description_ai":"replace entire HUD state","params":[{"name":"stats","type":"object","description_ai":"key to value map"}],"returns":{"type":"void","description_ai":"no return"}},
   {"command":"createHud.patch","description_ai":"merge values into existing HUD state","params":[{"name":"delta","type":"object","description_ai":"partial key-value map"}],"returns":{"type":"void","description_ai":"no return"}},
   {"command":"createToast","description_ai":"show temporary message at bottom of container","params":[{"name":"msg","type":"string","description_ai":"text"},{"name":"duration","type":"number","description_ai":"milliseconds to display"}],"returns":{"type":"void","description_ai":"no return"}}
+  ,{"command":"InventoryAPI.renderStorage","description_ai":"display inventory panel with optional position and collapsed state","params":[{"name":"opts","type":"object","description_ai":"{position:'left'|'right'|'bottom',collapsed:boolean}"}],"returns":{"type":"void","description_ai":"no return"}}
+  ,{"command":"MovementLite.init","description_ai":"activate basic player movement and interaction handling","params":[{"name":"core","type":"Core","description_ai":"core instance"}],"returns":{"type":"void","description_ai":"no return"}}
 ]

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Lite Apple Shop</title>
+    <style>
+      body { margin: 0; background: #222; color: #fff; font-family: sans-serif; text-align: center; }
+      #game { width: 960px; height: 540px; margin: 2rem auto; position: relative; border: 1px solid #444; }
+    </style>
+  </head>
+  <body>
+    <h1>Lite Apple Shop Demo</h1>
+    <div id="game"></div>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.min.js"></script>
+    <script src="../../dist/core-kit.umd.js"></script>
+    <script>
+      const core = PCore.createCore({ container: '#game', width: 960, height: 540, seed: 7 });
+      PCore.DialogueLite.init(core);
+      PCore.InventoryLite.init(core);
+      PCore.TradeLite.init(core);
+      PCore.CharactersLite.init(core);
+      PCore.LocationLite.init(core);
+      PCore.MovementLite.init(core);
+      core.loadConfig('game.json').then(() => {
+        const money = core.registry.get('char.hero.money');
+        const energy = core.registry.get('char.hero.energy');
+        core.ui.hud.set({ money, energy });
+        core.bus.on('char:changed', (p) => {
+          if (p.id === 'hero') {
+            if (p.key === 'money') core.ui.hud.patch({ money: p.value });
+            if (p.key === 'energy') core.ui.hud.patch({ energy: p.value });
+          }
+        });
+        core.inventory.renderStorage({ position: 'right', collapsed: true });
+        core.start();
+      });
+    </script>
+  </body>
+</html>
