@@ -184,7 +184,7 @@ export function createCore(opts = {}) {
       }
       scenes.set(sceneKey, GenericScene);
       // Add scene to Phaser but don't start yet
-      if (!app.scene.get(sceneKey)) {
+      if (!app.scene.getScene(sceneKey)) {
         app.scene.add(sceneKey, GenericScene, false);
       }
     });
