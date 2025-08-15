@@ -83,6 +83,80 @@ export const InventoryLite = {
       return Object.entries(inv || {}).map(([id, qty]) => ({ id, q: qty }));
     }
     // Attach API to core
-    core.inventory = { add, remove, has, list };
+    function renderStorage(opts = {}) {
+      if (typeof document === 'undefined') return;
+      const position = opts.position || 'right';
+      const collapsed = opts.collapsed ?? false;
+      const container = core.app?.canvas?.parentElement || document.body;
+      const panel = document.createElement('div');
+      panel.style.position = 'absolute';
+      panel.style.background = 'rgba(0,0,0,0.7)';
+      panel.style.color = '#fff';
+      panel.style.padding = '4px';
+      panel.style.minWidth = '120px';
+      panel.style.maxHeight = '200px';
+      panel.style.overflowY = 'auto';
+      if (position === 'left') panel.style.left = '0';
+      if (position === 'right') panel.style.right = '0';
+      if (position === 'bottom') {
+        panel.style.left = '0';
+        panel.style.right = '0';
+        panel.style.bottom = '0';
+      } else {
+        panel.style.top = '0';
+      }
+      const toggle = document.createElement('button');
+      toggle.textContent = collapsed ? '▶' : '◀';
+      toggle.style.position = 'absolute';
+      toggle.style.top = '0';
+      if (position === 'right') toggle.style.left = '-20px';
+      if (position === 'left') toggle.style.right = '-20px';
+      if (position === 'bottom') {
+        toggle.style.right = '0';
+        toggle.style.top = '-20px';
+      }
+      panel.appendChild(toggle);
+      const listEl = document.createElement('div');
+      panel.appendChild(listEl);
+      function refresh() {
+        listEl.innerHTML = '';
+        const items = list();
+        items.forEach((it) => {
+          const row = document.createElement('div');
+          row.textContent = `${it.id} (${it.q})`;
+          row.style.cursor = 'pointer';
+          row.onclick = () => {
+            const menu = document.createElement('div');
+            menu.style.background = '#222';
+            menu.style.padding = '2px';
+            const consume = document.createElement('div');
+            consume.textContent = 'consume';
+            consume.onclick = () => {
+              bus.emit('inventory:consume', { id: it.id });
+              menu.remove();
+            };
+            const drop = document.createElement('div');
+            drop.textContent = 'drop';
+            drop.onclick = () => {
+              bus.emit('inventory:drop', { id: it.id });
+              menu.remove();
+            };
+            menu.appendChild(consume);
+            menu.appendChild(drop);
+            row.appendChild(menu);
+          };
+          listEl.appendChild(row);
+        });
+      }
+      toggle.onclick = () => {
+        const hidden = listEl.style.display === 'none';
+        listEl.style.display = hidden ? 'block' : 'none';
+      };
+      listEl.style.display = collapsed ? 'none' : 'block';
+      container.appendChild(panel);
+      refresh();
+      bus.on('inventory:changed', refresh);
+    }
+    core.inventory = { add, remove, has, list, renderStorage };
   },
 };

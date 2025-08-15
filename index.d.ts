@@ -50,6 +50,7 @@ export interface InventoryAPI {
   remove(id: string, q?: number, charId?: string): void;
   has(id: string, q?: number, charId?: string): boolean;
   list(charId?: string): { id: string; q: number }[];
+  renderStorage?(opts?: { position?: 'left' | 'right' | 'bottom'; collapsed?: boolean }): void;
 }
 
 /** Character management API attached by CharactersLite. */
@@ -162,4 +163,6 @@ export const CharactersLite: { init(core: Core): void };
 
 /** Plugin exporting location features. Call `init` with core to activate. */
 export const LocationLite: { init(core: Core): void };
+/** Plugin exporting movement features. Call `init` with core to activate. */
+export const MovementLite: { init(core: Core): void };
 

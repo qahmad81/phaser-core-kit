@@ -20,6 +20,7 @@
       PCore.TradeLite.init(core);
       PCore.CharactersLite.init(core);
       PCore.LocationLite.init(core);
+      PCore.MovementLite.init(core);
       core.loadConfig('game.json').then(() => {
         const money = core.registry.get('char.hero.money');
         const energy = core.registry.get('char.hero.energy');
@@ -30,6 +31,7 @@
             if (p.key === 'energy') core.ui.hud.patch({ energy: p.value });
           }
         });
+        core.inventory.renderStorage({ position: 'right', collapsed: true });
         core.start();
       });
     </script>

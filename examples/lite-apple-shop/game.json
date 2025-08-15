@@ -35,7 +35,7 @@
       "id": "village",
       "background": "bg_village",
       "entities": [
-        { "type": "player", "id": "hero", "spawn": [120, 360], "sprite": "player" },
+        { "type": "player", "id": "hero", "spawn": [120, 360], "sprite": "player", "movement": "topdown" },
         { "type": "npc", "id": "merchant", "spawn": [320, 340], "sprite": "npc", "dialog": "merchant_intro" }
       ],
       "shops": ["fruit_stand"]

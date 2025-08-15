@@ -2,8 +2,9 @@
 
 ## Core Setup
 1. call `createCore` with desired size and container selector
-2. for inventory, dialogue, trade, characters or locations, call each plugin `init(core)`
-3. load configuration with `core.loadConfig(configObject)` then call `core.start()`
+2. for inventory, dialogue, trade, characters, locations or movement, call each plugin `init(core)`
+3. optionally render inventory storage UI via `core.inventory.renderStorage({position:'right'})`
+4. load configuration with `core.loadConfig(configObject)` then call `core.start()`
 
 ## Command Examples
 ### Create core and load scene

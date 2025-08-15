@@ -663,12 +663,19 @@
             }
             // Entities
             if (Array.isArray(sceneDef.entities)) {
+              this.npcs = [];
               sceneDef.entities.forEach((entity) => {
                 if (entity.type === 'player' || entity.type === 'npc') {
                   const [x, y] = entity.spawn;
-                  const sprite = this.add.sprite(x, y, entity.sprite);
+                  const sprite = this.physics.add.sprite(x, y, entity.sprite);
                   sprite.setOrigin(0.5, 1);
                   sprite.setInteractive();
+                  sprite.entity = entity;
+                  if (entity.type === 'player') {
+                    this.player = sprite;
+                  } else {
+                    this.npcs.push(sprite);
+                  }
                   if (entity.dialog) {
                     sprite.on('pointerdown', () => {
                       // Emit event for NPC interaction
@@ -680,6 +687,7 @@
             }
             // Emit scene changed event
             bus.emit('core:scene_changed', { id: sceneKey });
+            bus.emit('scene:created', { id: sceneKey, scene: this, def: sceneDef });
           }
           update(time, delta) {
             bus.emit('core:tick', delta);
@@ -969,7 +977,81 @@
         return Object.entries(inv || {}).map(([id, qty]) => ({ id, q: qty }));
       }
       // Attach API to core
-      core.inventory = { add, remove, has, list };
+      function renderStorage(opts = {}) {
+        if (typeof document === 'undefined') return;
+        const position = opts.position || 'right';
+        const collapsed = opts.collapsed ?? false;
+        const container = core.app?.canvas?.parentElement || document.body;
+        const panel = document.createElement('div');
+        panel.style.position = 'absolute';
+        panel.style.background = 'rgba(0,0,0,0.7)';
+        panel.style.color = '#fff';
+        panel.style.padding = '4px';
+        panel.style.minWidth = '120px';
+        panel.style.maxHeight = '200px';
+        panel.style.overflowY = 'auto';
+        if (position === 'left') panel.style.left = '0';
+        if (position === 'right') panel.style.right = '0';
+        if (position === 'bottom') {
+          panel.style.left = '0';
+          panel.style.right = '0';
+          panel.style.bottom = '0';
+        } else {
+          panel.style.top = '0';
+        }
+        const toggle = document.createElement('button');
+        toggle.textContent = collapsed ? '▶' : '◀';
+        toggle.style.position = 'absolute';
+        toggle.style.top = '0';
+        if (position === 'right') toggle.style.left = '-20px';
+        if (position === 'left') toggle.style.right = '-20px';
+        if (position === 'bottom') {
+          toggle.style.right = '0';
+          toggle.style.top = '-20px';
+        }
+        panel.appendChild(toggle);
+        const listEl = document.createElement('div');
+        panel.appendChild(listEl);
+        function refresh() {
+          listEl.innerHTML = '';
+          const items = list();
+          items.forEach((it) => {
+            const row = document.createElement('div');
+            row.textContent = `${it.id} (${it.q})`;
+            row.style.cursor = 'pointer';
+            row.onclick = () => {
+              const menu = document.createElement('div');
+              menu.style.background = '#222';
+              menu.style.padding = '2px';
+              const consume = document.createElement('div');
+              consume.textContent = 'consume';
+              consume.onclick = () => {
+                bus.emit('inventory:consume', { id: it.id });
+                menu.remove();
+              };
+              const drop = document.createElement('div');
+              drop.textContent = 'drop';
+              drop.onclick = () => {
+                bus.emit('inventory:drop', { id: it.id });
+                menu.remove();
+              };
+              menu.appendChild(consume);
+              menu.appendChild(drop);
+              row.appendChild(menu);
+            };
+            listEl.appendChild(row);
+          });
+        }
+        toggle.onclick = () => {
+          const hidden = listEl.style.display === 'none';
+          listEl.style.display = hidden ? 'block' : 'none';
+        };
+        listEl.style.display = collapsed ? 'none' : 'block';
+        container.appendChild(panel);
+        refresh();
+        bus.on('inventory:changed', refresh);
+      }
+      core.inventory = { add, remove, has, list, renderStorage };
     },
   };
 
@@ -1144,10 +1226,79 @@
     },
   };
 
+  /**
+   * MovementLite plugin.
+   * Provides basic player movement in either 'topdown' or 'horizontal' modes
+   * and emits interaction events when the appropriate key is pressed.
+   */
+  const MovementLite = {
+    /**
+     * Initialise the movement plugin.
+     * @param {import('../types').Core} core
+     */
+    init(core) {
+      const bus = core.bus;
+      const Phaser = core.Phaser;
+      let scene = null;
+      let cursors = null;
+      let interactKey = null;
+      let mode = 'topdown';
+      // When a scene is created, set up player controls
+      bus.on('scene:created', ({ scene: sc }) => {
+        scene = sc;
+        const player = sc.player;
+        if (!player) return;
+        mode = player.entity?.movement || 'topdown';
+        player.body.setCollideWorldBounds(true);
+        if (mode === 'horizontal') {
+          player.body.setGravityY(600);
+        }
+        cursors = sc.input.keyboard.createCursorKeys();
+        interactKey = mode === 'horizontal'
+          ? sc.input.keyboard.addKey('E')
+          : sc.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        interactKey.on('down', () => {
+          const p = sc.player;
+          const npcs = sc.npcs || [];
+          for (const npc of npcs) {
+            const dist = Phaser.Math.Distance.Between(p.x, p.y, npc.x, npc.y);
+            if (dist < 40 && npc.entity?.dialog) {
+              bus.emit('npc:interact', npc.entity);
+              break;
+            }
+          }
+          bus.emit('player:interact', { mode });
+        });
+      });
+      // Update movement each tick
+      bus.on('core:tick', () => {
+        if (!scene || !scene.player || !cursors) return;
+        const player = scene.player;
+        if (mode === 'topdown') {
+          const speed = 150;
+          player.body.setVelocity(0);
+          if (cursors.left.isDown) player.body.setVelocityX(-speed);
+          else if (cursors.right.isDown) player.body.setVelocityX(speed);
+          if (cursors.up.isDown) player.body.setVelocityY(-speed);
+          else if (cursors.down.isDown) player.body.setVelocityY(speed);
+        } else {
+          const speed = 150;
+          if (cursors.left.isDown) player.body.setVelocityX(-speed);
+          else if (cursors.right.isDown) player.body.setVelocityX(speed);
+          else player.body.setVelocityX(0);
+          if (Phaser.Input.Keyboard.JustDown(cursors.up) && player.body.blocked.down) {
+            player.body.setVelocityY(-300);
+          }
+        }
+      });
+    },
+  };
+
   exports.CharactersLite = CharactersLite;
   exports.DialogueLite = DialogueLite;
   exports.InventoryLite = InventoryLite;
   exports.LocationLite = LocationLite;
+  exports.MovementLite = MovementLite;
   exports.TradeLite = TradeLite;
   exports.createCore = createCore;
 

@@ -152,12 +152,19 @@ export function createCore(opts = {}) {
           }
           // Entities
           if (Array.isArray(sceneDef.entities)) {
+            this.npcs = [];
             sceneDef.entities.forEach((entity) => {
               if (entity.type === 'player' || entity.type === 'npc') {
                 const [x, y] = entity.spawn;
-                const sprite = this.add.sprite(x, y, entity.sprite);
+                const sprite = this.physics.add.sprite(x, y, entity.sprite);
                 sprite.setOrigin(0.5, 1);
                 sprite.setInteractive();
+                sprite.entity = entity;
+                if (entity.type === 'player') {
+                  this.player = sprite;
+                } else {
+                  this.npcs.push(sprite);
+                }
                 if (entity.dialog) {
                   sprite.on('pointerdown', () => {
                     // Emit event for NPC interaction
@@ -169,6 +176,7 @@ export function createCore(opts = {}) {
           }
           // Emit scene changed event
           bus.emit('core:scene_changed', { id: sceneKey });
+          bus.emit('scene:created', { id: sceneKey, scene: this, def: sceneDef });
         }
         update(time, delta) {
           bus.emit('core:tick', delta);
